@@ -1,7 +1,10 @@
+mod errors;
+pub mod window;
+
+use crate::errors::*;
 use crate::window::*;
 use std::collections::HashMap;
 use std::str;
-pub mod window;
 
 pub struct Rustofi<T, C> {
     pub response_type: ResponseType,
@@ -14,13 +17,25 @@ pub enum ResponseType {
     TypeAction,
 }
 
+/// Default way of creating applications
+/// A `Rustofi<T, C>` instance takes in
+/// `prompt: a string displayed at the top`
+/// `window: A Window object, allowing you to set the dimensions (note columns is stripped)`
+/// `selections: HashMap<String, DataObject> displayed as the second section of entries in the window`
+/// `actions: Vector<ActionObject> displayed as the second section of entries in the window`
+/// in this example, T is a POD `DataObject` and `ActionObject` is some object that implements ToStr
+///
+/// The window created has the `actions` and `selections` displayed separated by a blank line,
+/// if the blank line is selected an error is returned. If a `selections` item is selected, we return
+/// the variant `TypeSelection` and the backing object of that selection in the HashMap.
+/// If a `actions` item is selected, we return the variant `TypeAction` and the backing type of the action
 impl<T: Clone, C: ToString + Clone> Rustofi<T, C> {
     pub fn new(
         prompt: &str,
         window: Window,
         selections: HashMap<String, T>,
         actions: Vec<C>,
-    ) -> Result<Rustofi<T, C>, ()> {
+    ) -> Result<Rustofi<T, C>, RustofiError> {
         let mut true_options: Vec<String> = selections.keys().cloned().collect();
         let selections_len = true_options.len() as i32;
         true_options.extend(vec!["".to_string()]);
@@ -35,7 +50,6 @@ impl<T: Clone, C: ToString + Clone> Rustofi<T, C> {
             .show(true_options);
         match response {
             Ok(data) => {
-                println!("INDEX IS: {:?} LENGTH IS: {:?}", data.index, selections_len);
                 if data.index < selections_len {
                     // an option selected
                     Ok(Rustofi {
@@ -43,9 +57,6 @@ impl<T: Clone, C: ToString + Clone> Rustofi<T, C> {
                         selection: selections.get(&data.entry).map(|k| k.clone()),
                         action: None,
                     })
-                } else if data.index == selections_len {
-                    // the empty space selected
-                    Err(())
                 } else if data.index > selections_len {
                     // an action selected
                     Ok(Rustofi {
@@ -54,10 +65,14 @@ impl<T: Clone, C: ToString + Clone> Rustofi<T, C> {
                         selection: None,
                     })
                 } else {
-                    Err(())
+                    // the empty space selected
+                    Err(RustofiError::new(
+                        RustofiErrorType::BlankLineError,
+                        "The blank spacer line was selected",
+                    ))
                 }
             }
-            Err(_) => Err(()),
+            Err(e) => Err(e.into()),
         }
     }
 }

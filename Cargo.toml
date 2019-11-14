@@ -3,6 +3,13 @@ name = "rustofi"
 version = "0.1.0"
 authors = ["Kristopher Ruzic <krruzic@gmail.com>"]
 edition = "2018"
+license = "GPL-3.0+"
+description = "Library to build simple 'GUI' applications with rofi"
+readme = "README.md"
+keywords = ["gui", "rofi", "launcher", "ui"]
+categories = ["gui"]
+homepage = "https://github.com/krruzic/rustofi"
+repository = "https://github.com/krruzic/rustofi"
 
 [lib]
 name = "rustofi"

@@ -1,7 +1,10 @@
-use num_derive::ToPrimitive;
-use num_traits::ToPrimitive;
+use crate::errors::*;
+
 use std::str;
 use std::str::FromStr;
+
+use num_derive::ToPrimitive;
+use num_traits::ToPrimitive;
 use subprocess::PopenError;
 use subprocess::{ExitStatus, Popen, PopenConfig, Redirection};
 
@@ -130,13 +133,13 @@ impl<'a, 's, 'm> Window<'m> {
         self.additional_args.extend(args);
         self
     }
-    pub fn show(self, options: Vec<String>) -> Result<RofiData, ()> {
+    pub fn show(self, options: Vec<String>) -> Result<RofiData, WindowError> {
         let res = self.run_blocking(options);
         match res {
             Ok(d) => {
                 return Ok(d);
             }
-            Err(_) => panic!("something broke"),
+            Err(e) => Err(e.into()),
         }
     }
 }
