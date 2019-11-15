@@ -57,7 +57,7 @@ impl AppRoot {
             response: RustofiOptionType::Exit
         };
         let exit_action = RustofiOption {
-            display: "Exit".to_string(),
+            display: "[Exit]".to_string(),
             callback: Box::new(AppRoot::nop),
             option: RustofiOptionType::Exit
         };
@@ -118,7 +118,7 @@ impl AppRoot {
                 } else if index < self.selections.len() {
                     self.selections[index].run();
                     Ok(RustofiOptionType::Selection)
-                } else if index > self.selections.len() {
+                } else if index >= self.selections.len() {
                     match blank_callback {
                         None => (AppRoot::nop)(""),
                         Some(mut cb) => (cb)("")

@@ -71,6 +71,7 @@ fn create_window() -> Window<'static> {
     Window::new("Today's Todo list")
         .format('i')
         .location(Location::MiddleCentre)
+        .message("Select an item to mark it as complete, select the blank row to add a new item")
         .dimensions(Dimensions {
             width: 720,
             height: 640,
@@ -160,7 +161,7 @@ impl TodoApp {
             });
         }
         todo_list.push(RustofiOption {
-            display: "Delete".to_string(),
+            display: "[Delete]".to_string(),
             callback: Box::new(TodoApp::delete_prompt),
             option: RustofiOptionType::Action
         });
