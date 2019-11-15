@@ -3,4 +3,4 @@
 **/*.rs.bk
 .idea/
 *.lock
-*rustfmt.toml
+rustfmt.toml
