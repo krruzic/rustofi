@@ -63,7 +63,7 @@ impl RustofiOption {
 /// fn simple_callback(s: &str) {
 ///     println!("Clicked on {}", s.to_string());
 /// }
-//
+///
 /// fn create_window() -> Window<'static> {
 ///     Window::new("A Simple Rustofi App")
 ///         .format('i')

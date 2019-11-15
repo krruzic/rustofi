@@ -1,6 +1,6 @@
 [package]
 name = "rustofi"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Kristopher Ruzic <krruzic@gmail.com>"]
 edition = "2018"
 license = "GPL-3.0+"

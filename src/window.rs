@@ -93,7 +93,6 @@ impl<'a, 's, 'm> Window<'m> {
 
         call.extend(self.to_args());
         let mut p = Popen::create(&call, pc)?;
-        println!("{:?}", call);
         // Obtain the output from the standard streams.
         let (entry, _stdout) = p.communicate(Some(&options_arr))?;
         let entry = entry.unwrap_or("-1".to_string());
