@@ -1,18 +1,17 @@
-use crate::errors::*;
-
 use std::str;
-use std::str::FromStr;
 
 use num_derive::ToPrimitive;
 use num_traits::ToPrimitive;
-use subprocess::PopenError;
-use subprocess::{ExitStatus, Popen, PopenConfig, Redirection};
+
+use subprocess::{Popen, PopenConfig, Redirection};
+
+use crate::errors::*;
 
 trait ToArgs {
     fn to_args(&self) -> Vec<String>;
 }
 
-#[derive(Debug, ToPrimitive)]
+#[derive(Debug, ToPrimitive, Clone)]
 pub enum Location {
     TopLeft = 1,
     TopCentre = 2,
@@ -22,41 +21,45 @@ pub enum Location {
     MiddleRight = 4,
     BottomLeft = 7,
     BottomCentre = 6,
-    BottomRight = 5,
+    BottomRight = 5
 }
 
+#[derive(Debug, Clone)]
 pub struct Dimensions {
     pub width: i32,
     pub height: i32,
     pub lines: i32,
-    pub columns: i32,
+    pub columns: i32
 }
 
+#[derive(Debug, Clone)]
 pub struct Padding {
     pub x: i32,
-    pub y: i32,
+    pub y: i32
 }
 
+#[derive(Debug, Clone)]
 pub struct Window<'m> {
-    prompt: String,
-    message: Option<&'m str>,
+    pub prompt: String,
+    pub message: Option<&'m str>,
     // Additional args not covered
-    additional_args: Vec<String>,
+    pub additional_args: Vec<String>,
     // Graphics information
-    padding: Padding,
-    location: Location,
-    dimensions: Dimensions,
-    fullscreen: bool,
+    pub padding: Padding,
+    pub location: Location,
+    pub dimensions: Dimensions,
+    pub fullscreen: bool,
+    pub format: ReturnFormat
 }
 
-pub struct RofiData {
-    pub index: i32,    // which list element they selected
-    pub entry: String, // which list element they selected
-    pub exit_code: Result<ExitStatus, PopenError>,
+#[derive(Debug, Clone, PartialEq)]
+pub enum ReturnFormat {
+    StringReturn,
+    IntReturn
 }
 
 impl<'a, 's, 'm> Window<'m> {
-    fn run_blocking(self, options: Vec<String>) -> Result<RofiData, PopenError> {
+    fn run_blocking(self, options: Vec<String>) -> Result<String, WindowError> {
         let pc = PopenConfig {
             stdout: Redirection::Pipe,
             stdin: Redirection::Pipe,
@@ -68,7 +71,7 @@ impl<'a, 's, 'm> Window<'m> {
             .collect::<Vec<String>>()
             .join("\n");
 
-        let mut call = vec!["rofi", "-dmenu", "-format", "i"]
+        let mut call = vec!["rofi", "-dmenu", "-format"]
             .iter()
             .map(|s| s.to_string())
             .collect::<Vec<String>>();
@@ -77,13 +80,12 @@ impl<'a, 's, 'm> Window<'m> {
         let mut p = Popen::create(&call, pc)?;
         println!("{:?}", call);
         // Obtain the output from the standard streams.
-        let (entry, _) = p.communicate(Some(&options_arr))?;
-        let index = i32::from_str(entry.unwrap().trim()).unwrap();
-        Ok(RofiData {
-            index: index,
-            entry: options[index as usize].to_string(),
-            exit_code: p.wait(),
-        })
+        let (entry, _stdout) = p.communicate(Some(&options_arr))?;
+        let entry = entry.unwrap_or("-1".to_string());
+        match p.wait() {
+            Ok(_p) => Ok(entry.clone().trim().to_string()),
+            Err(e) => Err(e.into())
+        }
     }
     pub fn new(prompt: &'a str) -> Self {
         Window {
@@ -96,9 +98,10 @@ impl<'a, 's, 'm> Window<'m> {
                 width: 480,
                 height: 240,
                 lines: 4,
-                columns: 1,
+                columns: 1
             },
             fullscreen: false,
+            format: ReturnFormat::IntReturn
         }
     }
     pub fn message(mut self, msg: &'static str) -> Self {
@@ -129,17 +132,25 @@ impl<'a, 's, 'm> Window<'m> {
         self.fullscreen = f;
         self
     }
+    pub fn format(mut self, f: char) -> Self {
+        match f {
+            's' => self.format = ReturnFormat::StringReturn,
+            'i' | _ => self.format = ReturnFormat::IntReturn
+        }
+        self
+    }
+
     pub fn add_args(mut self, args: Vec<String>) -> Self {
         self.additional_args.extend(args);
         self
     }
-    pub fn show(self, options: Vec<String>) -> Result<RofiData, WindowError> {
+    pub fn show(self, options: Vec<String>) -> Result<String, WindowError> {
         let res = self.run_blocking(options);
         match res {
             Ok(d) => {
                 return Ok(d);
             }
-            Err(e) => Err(e.into()),
+            Err(e) => Err(e.into())
         }
     }
 }
@@ -158,6 +169,7 @@ impl ToArgs for Dimensions {
         ]
     }
 }
+
 impl ToArgs for Padding {
     fn to_args(&self) -> Vec<String> {
         vec![
@@ -178,9 +190,18 @@ impl ToArgs for Location {
     }
 }
 
+impl ToArgs for ReturnFormat {
+    fn to_args(&self) -> Vec<String> {
+        match self {
+            ReturnFormat::StringReturn => vec!["s".to_string()],
+            ReturnFormat::IntReturn => vec!["i".to_string()]
+        }
+    }
+}
 impl<'a, 'm> ToArgs for Window<'m> {
     fn to_args(&self) -> Vec<String> {
         let mut args = Vec::new();
+        args.extend(self.format.to_args());
         args.extend(self.dimensions.to_args());
         if self.fullscreen {
             args.extend(vec!["-fullscreen".to_string()]);
