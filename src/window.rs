@@ -7,10 +7,8 @@ use subprocess::{Popen, PopenConfig, Redirection};
 
 use crate::errors::*;
 
-trait ToArgs {
-    fn to_args(&self) -> Vec<String>;
-}
 
+/// Each variant positions the rofi window at the described position on screen
 #[derive(Debug, ToPrimitive, Clone)]
 pub enum Location {
     TopLeft = 1,
@@ -26,38 +24,55 @@ pub enum Location {
 
 #[derive(Debug, Clone)]
 pub struct Dimensions {
+    /// width flag
     pub width: i32,
+    /// height flag
     pub height: i32,
+    /// lines flag
     pub lines: i32,
+    /// columns flag
     pub columns: i32
 }
 
 #[derive(Debug, Clone)]
 pub struct Padding {
+    /// xoffset flag
     pub x: i32,
+    /// yoffset flag
     pub y: i32
 }
 
 #[derive(Debug, Clone)]
 pub struct Window<'m> {
+    /// message to display next to the entry field
     pub prompt: String,
+    /// short message displayed beneath this field and above all options
     pub message: Option<&'m str>,
-    // Additional args not covered
+    /// Additional args to pass to rofi
     pub additional_args: Vec<String>,
-    // Graphics information
-    pub padding: Padding,
+    /// location on screen to place the window
     pub location: Location,
+    /// X and Y offsets from the `Location`
+    pub padding: Padding,
+    /// width, height, rows and columns of the window
     pub dimensions: Dimensions,
+    /// whether to show in fullscreen. Overrides location and padding
     pub fullscreen: bool,
+    /// return user selection as an index or string
     pub format: ReturnFormat
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ReturnFormat {
+    /// Return raw entry from the user
     StringReturn,
+    /// Return an integer representing the index in the list selected
     IntReturn
 }
 
+/// represents the raw 'window' that rofi shows
+/// the Window struct can be customized to change the appearance of the shown window
+/// note that some fields will be overwritten by `Rustofi::AppRoot`
 impl<'a, 's, 'm> Window<'m> {
     fn run_blocking(self, options: Vec<String>) -> Result<String, WindowError> {
         let pc = PopenConfig {
@@ -87,6 +102,8 @@ impl<'a, 's, 'm> Window<'m> {
             Err(e) => Err(e.into())
         }
     }
+
+    /// create a window with given prompt
     pub fn new(prompt: &'a str) -> Self {
         Window {
             prompt: prompt.to_owned(),
@@ -104,34 +121,42 @@ impl<'a, 's, 'm> Window<'m> {
             format: ReturnFormat::IntReturn
         }
     }
+    /// set the window's message
     pub fn message(mut self, msg: &'static str) -> Self {
         self.message = Some(msg);
         self
     }
+    /// set the window's location
     pub fn location(mut self, l: Location) -> Self {
         self.location = l;
         self
     }
+    /// set the window's padding
     pub fn padding(mut self, x: i32, y: i32) -> Self {
         self.padding = Padding { x, y };
         self
     }
+    /// set the window's dimensions
     pub fn dimensions(mut self, d: Dimensions) -> Self {
         self.dimensions = d;
         self
     }
+    /// set the window's prompt
     pub fn prompt(mut self, s: String) -> Self {
         self.prompt = s;
         self
     }
+    /// set number of lines for the window
     pub fn lines(mut self, l: i32) -> Self {
         self.dimensions.lines = l;
         self
     }
+    /// set if the window should be fullscreen
     pub fn fullscreen(mut self, f: bool) -> Self {
         self.fullscreen = f;
         self
     }
+    /// set the windows format
     pub fn format(mut self, f: char) -> Self {
         match f {
             's' => self.format = ReturnFormat::StringReturn,
@@ -144,6 +169,8 @@ impl<'a, 's, 'm> Window<'m> {
         self.additional_args.extend(args);
         self
     }
+
+    /// run the rofi command this window represents
     pub fn show(self, options: Vec<String>) -> Result<String, WindowError> {
         let res = self.run_blocking(options);
         match res {
@@ -155,6 +182,9 @@ impl<'a, 's, 'm> Window<'m> {
     }
 }
 
+trait ToArgs {
+    fn to_args(&self) -> Vec<String>;
+}
 impl ToArgs for Dimensions {
     fn to_args(&self) -> Vec<String> {
         vec![
@@ -198,6 +228,7 @@ impl ToArgs for ReturnFormat {
         }
     }
 }
+
 impl<'a, 'm> ToArgs for Window<'m> {
     fn to_args(&self) -> Vec<String> {
         let mut args = Vec::new();
