@@ -8,7 +8,7 @@ It supports getting user selection, user entry and can run associated callbacks 
 Add this to your `Cargo.toml`
 ```toml
 [dependencies]
-rustofi = "0.2.0"
+rustofi = "0.2.2"
 ```
 
 then to use in your Rust 2018 application you'll probably want these imports
