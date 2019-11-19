@@ -7,7 +7,6 @@ use subprocess::{Popen, PopenConfig, Redirection};
 
 use crate::errors::*;
 
-
 /// Each variant positions the rofi window at the described position on screen
 #[derive(Debug, ToPrimitive, Clone)]
 pub enum Location {

@@ -1,10 +1,10 @@
 [package]
 name = "rustofi"
-version = "0.1.6"
+version = "0.2.0"
 authors = ["Kristopher Ruzic <krruzic@gmail.com>"]
 edition = "2018"
 license = "GPL-3.0+"
-description = "Library to build simple 'GUI' applications with rofi"
+description = "Library to build simple 'Rofi User Interface' applications"
 readme = "README.md"
 keywords = ["gui", "rofi", "launcher", "ui"]
 categories = ["gui"]

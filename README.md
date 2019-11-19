@@ -1,20 +1,20 @@
 Rustofi
 =======
 
-Rustofi is a library for building GUI applications using Rofi commands. 
-It supports getting user selection, user entry and can run associated callbacks on item selection. 
+Rustofi is a library for building RUI (Rofi User Interface) applications.
+It supports getting user selection, user entry and can run associated callbacks on item selection.
 
 # Usage
 Add this to your `Cargo.toml`
 ```toml
 [dependencies]
-rustofi = "0.1.6"
+rustofi = "0.2.0"
 ```
 
 then to use in your Rust 2018 application you'll probably want these imports
 ```rust
 use rustofi::{AppRoot, RustofiOption, RustofiOptionType};
-use rustofi::window::{Window, Location}; 
+use rustofi::window::{Window, Location};
 ```
 
 # Example
