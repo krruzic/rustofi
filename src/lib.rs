@@ -44,9 +44,15 @@
 //!     }
 //! }
 //! ```
+
+/// extra rofi window types usable to create an application, essentially navigation result pages
 pub mod components;
-mod errors;
+/// the error(s) returned by this crate
+pub mod errors;
+/// raw representation of a rofi command, use this to create new components, or your own from-scratch
+/// apps
 pub mod window;
+
 use std::clone::Clone;
 use std::fmt::Display;
 
