@@ -13,8 +13,8 @@ rustofi = "0.2.2"
 
 then to use in your Rust 2018 application you'll probably want these imports
 ```rust
-use rustofi::{AppRoot, RustofiOption, RustofiOptionType};
-use rustofi::window::{Window, Location};
+use rustofi::components::*;
+use rustofi::{AppPage, RustofiResult};
 ```
 
 # Example
@@ -28,11 +28,10 @@ cargo run --example simple
 ```
 
 ## Todo App
-A more complicated example `todo_app` is a persistent Todo List that can
+A more complicated example `todo_app`: A persistent Todo List that can
 - create new Todos
 - delete Todos
 - mark Todos as finished
-
 ```bash
 git clone https://github.com/krruzic/rustofi
 cd rustofi

@@ -9,7 +9,6 @@ pub enum WindowErrorType {
     PopenError
 }
 
-
 /// error returned whenever rofi itself errors out, this can only happen if `Popen` returns a bad exit
 /// code for some reason
 #[derive(Clone)]

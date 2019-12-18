@@ -1,5 +1,9 @@
 // examples/simple_action.rs
+use std::io::{Error, ErrorKind};
+use std::result::Result;
+
 use rustofi::components::ActionList;
+use rustofi::CallbackResult;
 use rustofi::RustofiResult;
 
 // notice the Clone derive and Display implementation? These are
@@ -25,19 +29,19 @@ fn simple_app(person: Person) -> RustofiResult {
         .display(format!("looking at {}, age {}", person.name, person.age))
 }
 
-pub fn simple_callback(person: &Person, action: &String) -> RustofiResult {
+pub fn simple_callback(person: &Person, action: &String) -> CallbackResult {
     println!("selected action: {}", action);
     // match which action was selected
     if action == "Age Up" {
-        println!("{} age + 5 is: {} ", person.name, person.age);
+        println!("{} age + 5 is: {} ", person.name, person.age + 5);
     } else if action == "Age Down" {
-        println!("{} age - 5 is: {}", person.name, person.age);
+        println!("{} age - 5 is: {}", person.name, person.age - 5);
     } else {
         // user entered a custom string
         println!("invalid action!");
-        return RustofiResult::Error;
+        return Err("invalid action".to_string());
     }
-    RustofiResult::Success
+    return Ok(());
 }
 
 fn main() {
@@ -48,7 +52,7 @@ fn main() {
     loop {
         match simple_app(p.clone()) {
             // loop until an exit or error occurs
-            RustofiResult::Error => break,
+            RustofiResult::Error(_) => break,
             RustofiResult::Exit => break,
             RustofiResult::Cancel => break,
             RustofiResult::Blank => break, // we could give the blank entry special powers

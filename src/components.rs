@@ -1,4 +1,3 @@
-
 //! `ItemList`, `ActionList` and `EntryBox` are additional components or controls you can use to build
 //! your application.
 //!
@@ -115,7 +114,7 @@ use std::clone::Clone;
 use std::fmt::Display;
 
 use crate::window::{Location, Window};
-use crate::{RustofiResult, RustofiCallback};
+use crate::{CallbackResult, RustofiCallback, RustofiResult};
 
 /// `ItemList` is a simple rofi window with a selection of items backed by a type `T`. Each item
 /// runs the same callback.
@@ -169,19 +168,21 @@ impl<'a, T: Display + Clone> ItemList<'a, T> {
                 } else if input == " " {
                     RustofiResult::Blank
                 } else {
-                    for item in self.items.clone() {
+                    for mut item in self.items.clone() {
                         if input == item.to_string() {
-                            return (self.item_callback)(&item);
+                            match (self.item_callback)(&mut item) {
+                                Ok(_) => return RustofiResult::Selection(input),
+                                Err(m) => return RustofiResult::Error(m)
+                            }
                         }
                     }
                     RustofiResult::Selection(input)
                 }
             }
-            Err(_) => RustofiResult::Error
+            Err(_) => RustofiResult::Error("error getting user input from rofi".to_string())
         }
     }
 }
-
 
 /// `ActionList` is a simple rofi window with a selection of strings that operate on a
 /// single item `T`. When a selection is made, the `action_callback` is called with the item and
@@ -190,7 +191,7 @@ impl<'a, T: Display + Clone> ItemList<'a, T> {
 pub struct ActionList<'a, T> {
     pub item: T,
     pub actions: Vec<String>,
-    pub action_callback: Box<dyn FnMut(&T, &String) -> RustofiResult>,
+    pub action_callback: Box<dyn FnMut(&T, &String) -> CallbackResult>,
     pub window: Window<'a>
 }
 
@@ -199,7 +200,7 @@ impl<'a, T: Display + Clone> ActionList<'a, T> {
     /// and a callback to run on selection
     pub fn new(
         item: T, actions: Vec<String>,
-        action_callback: Box<dyn FnMut(&T, &String) -> RustofiResult>
+        action_callback: Box<dyn FnMut(&T, &String) -> CallbackResult>
     ) -> Self {
         ActionList {
             item,
@@ -247,13 +248,16 @@ impl<'a, T: Display + Clone> ActionList<'a, T> {
                 } else {
                     for action in self.actions.clone() {
                         if input == action.to_string() {
-                            return (self.action_callback)(&self.item, &action.to_string());
+                            match (self.action_callback)(&self.item, &action.to_string()) {
+                                Ok(_) => return RustofiResult::Action(input),
+                                Err(m) => return RustofiResult::Error(m)
+                            }
                         }
                     }
                     RustofiResult::Action(input)
                 }
             }
-            Err(_) => RustofiResult::Error
+            Err(_) => RustofiResult::Error("error getting user input from rofi".to_string())
         }
     }
 }
@@ -281,7 +285,7 @@ impl<'a> EntryBox {
                     RustofiResult::Selection(input)
                 }
             }
-            Err(_) => RustofiResult::Error
+            Err(_) => RustofiResult::Error("error getting user input from rofi".to_string())
         }
     }
 }
