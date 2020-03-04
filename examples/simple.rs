@@ -24,7 +24,7 @@ fn main() {
     loop {
         match simple_app() {
             // loop unless the user requests we exit
-            RustofiResult::Error => break,
+            RustofiResult::Error(_) => break,
             RustofiResult::Exit => break,
             RustofiResult::Cancel => break,
             RustofiResult::Blank => break,
